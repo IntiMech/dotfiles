@@ -62,6 +62,7 @@ vim.keymap.set("n", "<leader>g", ":Telescope live_grep<CR>", { silent = true })
 
 -- Telescope Keybindings
 vim.keymap.set('n', '<leader>p', ":Telescope find_files<CR>", { silent = true })
+
 vim.keymap.set('n', '<C-p>', function()
     local opts = {} -- Define here if you want to define something
     local ok, _ = pcall(require('telescope.builtin').git_files, opts)
@@ -78,35 +79,35 @@ end, { silent = true })
 vim.keymap.set('n', '<leader>vh', require('telescope.builtin').help_tags, { silent = true })
 
 -- Double tap leader to source the current file
-vim.keymap.set("n", "<leader><leader>", function()
-    vim.cmd("so %")
-end)
-
--- Fugitive Keybindings
-vim.keymap.set("n", "<leader>", ":Git<CR>", { silent = true })
+-- vim.keymap.set("n", "<leader><leader>", function()
+--     vim.cmd("so %")
+-- end)
+--
+-- -- Fugitive Keybindings
+-- vim.keymap.set("n", "<leader>", ":Git<CR>", { silent = true })
 
 -- Set up buffer-local keybindings for fugitive buffers
-local function set_fugitive_keymaps()
-    if vim.bo.filetype ~= "fugitive" then
-        return
-    end
-
-    local bufnr = vim.api.nvim_get_current_buf()
-    local opts = {buffer = bufnr, silent = true}
-
-    vim.keymap.set("n", "<leader>", ":Git push<CR>", opts)
-    vim.keymap.set("n", "<leader>", ":Git pull --rebase<CR>", opts)
-    vim.keymap.set("n", "<leader>T", ":Git push -u origin ", opts)
-end
+-- local function set_fugitive_keymaps()
+--     if vim.bo.filetype ~= "fugitive" then
+--         return
+--     end
+--
+--     local bufnr = vim.api.nvim_get_current_buf()
+--     local opts = {buffer = bufnr, silent = true}
+--
+--     vim.keymap.set("n", "<leader>", ":Git push<CR>", opts)
+--     vim.keymap.set("n", "<leader>", ":Git pull --rebase<CR>", opts)
+--     vim.keymap.set("n", "<leader>T", ":Git push -u origin ", opts)
+-- end
 
 -- Create an augroup for Fugitive-related autocmds
-local IntiMech_Fugitive = vim.api.nvim_create_augroup("IntiMech_Fugitive", {})
-
--- Define autocmd to set keymaps when entering a buffer with 'fugitive' filetype
-vim.api.nvim_create_autocmd("BufWinEnter", {
-    group = IntiMech_Fugitive,
-    pattern = "*",
-    callback = set_fugitive_keymaps,
-})
-
-
+-- local IntiMech_Fugitive = vim.api.nvim_create_augroup("IntiMech_Fugitive", {})
+--
+-- -- Define autocmd to set keymaps when entering a buffer with 'fugitive' filetype
+-- vim.api.nvim_create_autocmd("BufWinEnter", {
+--     group = IntiMech_Fugitive,
+--     pattern = "*",
+--     callback = set_fugitive_keymaps,
+-- })
+--
+--
