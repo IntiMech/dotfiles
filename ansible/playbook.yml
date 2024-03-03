@@ -1,0 +1,111 @@
+
+---
+- name: Setup My Arch Environment
+  hosts: localhost
+  become: yes
+  gather_facts: no
+
+  tasks:
+    - name: Install packages with pacman
+      pacman:
+        name:
+          - neovim
+          - tmux
+          - brave
+          - flameshot
+          - alacritty
+          - zoxide
+        state: present
+
+    - name: Install AUR packages
+      shell: yay -S --noconfirm {{ item }}
+      with_items:
+        - notion-app 
+        - spotify
+        - appimagelauncher
+      ignore_errors: yes # Use this cautiously, primarily for handling AUR packages that might already be installed.
+
+    - name: Install Anaconda globally
+      get_url:
+        url: "https://repo.anaconda.com/archive/Anaconda3-2024.02-1-Linux-x86_64.sh"
+        dest: "/tmp/Anaconda3-2024.02-1-Linux-x86_64.sh"
+        mode: '0755'
+      command: bash /tmp/Anaconda3-2024.02-1-Linux-x86_64.sh -b -p /opt/anaconda3
+      args:
+        creates: "/opt/anaconda3"
+
+
+    - name: Install Oh My Zsh
+      shell: sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+      args:
+        creates: "{{ ansible_env.HOME }}/.oh-my-zsh"
+   
+    - name: Install Zsh autosuggestions plugin
+      git:
+        repo: 'https://github.com/zsh-users/zsh-autosuggestions'
+        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+      become: no
+
+    - name: Install Zsh syntax highlighting plugin
+      git:
+        repo: 'https://github.com/zsh-users/zsh-syntax-highlighting'
+        dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+      become: no
+
+    - name: Set up Zsh as the default shell
+      user:
+        name: "{{ ansible_user_id }}"
+        shell: "/usr/bin/zsh"
+
+    - name: Create Projects and Applications directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "~/Projects"
+        - "~/Applications"
+      become: no
+
+    - name: Download LM_Studio AppImage into Applications directory
+      get_url:
+        url: "https://releases.lmstudio.ai/linux/0.2.14/beta/LM_Studio-0.2.14-beta-1.AppImage"
+        dest: "~/Applications/LM_Studio-0.2.14-beta-1.AppImage"
+        mode: '0755'
+      become: no
+
+    - name: Download and Install Obsidian AppImage
+      get_url:
+        url: "https://github.com/obsidianmd/obsidian-releases/releases/latest/download/Obsidian-0.12.15.AppImage"
+        dest: "~/Applications/Obsidian.AppImage"
+        mode: '0755'
+
+    - name: Install Tmux Plugin Manager (TPM)
+      git:
+        repo: 'https://github.com/tmux-plugins/tpm'
+        dest: "{{ ansible_env.HOME }}/.tmux/plugins/tpm"
+        version: "master"
+      become: no
+
+    - name: Ensure Tmux Plugin Manager (TPM) directory exists
+      file:
+        path: "{{ ansible_env.HOME }}/.tmux/plugins/tpm"
+        state: directory
+        mode: '0755'
+      become: no
+
+    - name: Clone dotfiles repository
+      git:
+        repo: 'https://github.com/IntiMech/dotfiles'
+        dest: "~/dotfiles"
+        version: "main"
+      become: no
+
+    - name: Apply specific dotfiles using Stow
+      shell: stow -d ~/dotfiles -t ~ {{ item }}
+      loop:
+        - .config
+        - .p10k.zsh
+        - .zshrc
+      become: no
+
