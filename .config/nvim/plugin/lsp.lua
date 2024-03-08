@@ -32,54 +32,53 @@ end
 
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "tsserver", "pyright", "denols", "lua_ls" },
+    ensure_installed = { "tsserver", "pyright",  "lua_ls" },
     automatic_installation = true,
 })
 
+-- LSP handlers setup, now without the unnecessary existential crisis of deno.
 require("mason-lspconfig").setup_handlers({
-    ["denols"] = function()
-        nvim_lsp.denols.setup({
+    -- tsserver configuration, assuming deno.json files are as mythical as a good day without debugging
+    ["tsserver"] = function()
+        require('lspconfig')['tsserver'].setup({
             on_attach = on_attach,
-            root_dir = nvim_lsp.util.root_pattern("deno.json", "deno.jsonc"),
+            capabilities = capabilities,
+            root_dir = require('lspconfig.util').root_pattern("package.json"), -- because why not?
+            single_file_support = false -- because who edits a single file these days?
         })
     end,
-    ["tsserver"] = function()
-        if vim.fn.glob("deno.json") == "" and vim.fn.glob("deno.jsonc") == "" then
-            nvim_lsp.tsserver.setup({
-                on_attach = on_attach,
-                capabilities = capabilities,
-                root_dir = nvim_lsp.util.root_pattern("package.json"),
-                single_file_support = false
-            })
-        end
-    end,
+    -- lua_ls configuration, let's pretend we understand Lua deeply
     ["lua_ls"] = function()
-        require('neodev').setup()
-        nvim_lsp.lua_ls.setup({
+        require('neodev').setup() -- because Lua development without neodev is like pizza without cheese
+        require('lspconfig')['lua_ls'].setup({
             on_attach = on_attach,
             capabilities = capabilities,
             settings = {
                 Lua = {
-                    workspace = { checkThirdParty = false },
-                    telemetry = { enable = false },
+                    workspace = { checkThirdParty = false }, -- third-party? never heard of them
+                    telemetry = { enable = false }, -- because who wants to share their secrets?
                 },
             },
         })
     end,
+    -- pyright, because Python scripts are just too mainstream without type checking
     ["pyright"] = function()
-        require('lspconfig').pyright.setup({
+        require('lspconfig')['pyright'].setup({
             on_attach = on_attach,
             capabilities = capabilities,
             settings = {
                 python = {
                     analysis = {
                         autoSearchPaths = true,
-                        diagnosticMode = "workspace",
+                        diagnosticMode = "workspace", -- because we love seeing all our mistakes at once
                         useLibraryCodeForTypes = true,
-                        typeCheckingMode = "off",
+                        typeCheckingMode = "off", -- because who needs type safety?
                     }
                 }
             }
         })
     end,
+    -- Here you could add more LSP configurations as needed, because the more the merrier, right?
 })
+
+-- And there you have it, a beautifully crafted piece of modern art.
