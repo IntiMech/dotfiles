@@ -74,3 +74,16 @@ unset __conda_setup
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(zoxide init zsh)"
+
+
+# Start ssh-agent and add keys without producing output during shell initialization
+SSH_AGENT_FILE="$HOME/.ssh-agent-thing"
+if [ ! -S "$SSH_AUTH_SOCK" ]; then
+  if ! pgrep -u "$USER" ssh-agent > /dev/null; then
+    ssh-agent -s > "$SSH_AGENT_FILE"
+  fi
+  if [ -f "$SSH_AGENT_FILE" ]; then
+    eval "$(cat "$SSH_AGENT_FILE")" >/dev/null 2>&1
+  fi
+fi
+ssh-add -q ~/.ssh/id_ed25519 2>/dev/null

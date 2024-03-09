@@ -12,16 +12,9 @@ terminal = guess_terminal()
 # Define a function to run at startup
 @hook.subscribe.startup_once
 def autostart():
-    # Start the Network Manager Applet
-    os.system("nm-applet &")
+    home = os.path.expanduser('~')
+    subprocess.Popen([home + '/dotfiles/.config/qtile/autostart.sh'])
     
-    # Launch Brave on Workspace 2
-    qtile.cmd_to_screen(1) # Workspaces are 0-indexed; 1 is the second workspace
-    qtile.cmd_spawn('brave-browser')
-
-    # Launch Terminal on Workspace 1
-    qtile.cmd_to_screen(0) # Switch back to the first workspace
-    qtile.cmd_spawn('your-terminal-command-here') # Replace 'your-terminal-command-here' with your preferred terminal command
 
 keys = [
     # A list of available commands that can be bound to keys can be found
@@ -31,8 +24,8 @@ keys = [
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
-    Key([mod, "shift"], "space", lazy.spawn("rofi -show run"), desc="Launch Rofi"),
-    Key([mod], "space", lazy.layout.next(), desc="Move window focus to other window"),
+    Key([mod], "space", lazy.spawn("rofi -show run"), desc="Launch Rofi"),
+    # Key([mod], "space", lazy.layout.next(), desc=jMove window focus to other window"),
     # Move windows between left/right columns or move up/down in current stack.
     # Moving out of range in Columns layout will create new column.
     Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"),
@@ -56,7 +49,7 @@ keys = [
     # Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
     # Toggle between different layouts as defined below
     Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
-    Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
+    Key([mod], "q", lazy.window.kill(), desc="Kill focused window"),
     Key(
         [mod],
         "f",
@@ -135,7 +128,7 @@ screens = [
     Screen(
         bottom=bar.Bar(
             [
-                widget.CurrentLayout(),
+                # widget.CurrentLayout(),
                 widget.GroupBox(),
                 widget.Prompt(),
                 widget.WindowName(),
@@ -145,13 +138,12 @@ screens = [
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                widget.TextBox("default config", name="default"),
-                widget.TextBox("Press &lt;M-r&gt; to spawn", foreground="#d75f5f"),
+                # widget.TextBox("default config", name="default"),
+                # widget.TextBox("Press &lt;M-r&gt; to spawn", foreground="#d75f5f"),
                 # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
                 # widget.StatusNotifier(),
                 widget.Systray(),
                 widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
-                widget.QuickExit(),
             ],
             24,
             # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
