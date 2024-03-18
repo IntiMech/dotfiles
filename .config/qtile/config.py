@@ -1,20 +1,11 @@
-
-import os
-import subprocess
 from libqtile import bar, layout, qtile, widget, hook
+import subprocess
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
 
 mod = "mod4"
-terminal = guess_terminal()
-
-# Define a function to run at startup
-@hook.subscribe.startup_once
-def autostart():
-    home = os.path.expanduser('~')
-    subprocess.Popen([home + '/dotfiles/.config/qtile/autostart.sh'])
-    
+terminal = guess_terminal()    
 
 keys = [
     # A list of available commands that can be bound to keys can be found
@@ -117,41 +108,51 @@ layouts = [
     # layout.Zoomy(),
 ]
 
+
+# First, adjust the widget_defaults to increase padding, making everything more spaced out.
 widget_defaults = dict(
     font="sans",
     fontsize=12,
-    padding=3,
+    padding=10,  # Increased padding for dramatic spacing
 )
 extension_defaults = widget_defaults.copy()
 
+# Then, adjust the bar settings to increase its size and possibly add margin,
+# ensuring widgets have more room and don't overlap.
 screens = [
     Screen(
         bottom=bar.Bar(
             [
-                # widget.CurrentLayout(),
-                widget.GroupBox(),
-                widget.Prompt(),
-                widget.WindowName(),
-                widget.Chord(
-                    chords_colors={
-                        "launch": ("#ff0000", "#ffffff"),
-                    },
-                    name_transform=lambda name: name.upper(),
+                widget.GroupBox(
+                    padding_x=5,  # Additional padding around the text
+                    padding_y=5,  # Additional padding around the text
+                    margin_x=5,  # Space between each group box
+                    margin_y=5,  # Space above and below each group box
+                    borderwidth=3,  # Thickness of the border around each group box
                 ),
-                # widget.TextBox("default config", name="default"),
-                # widget.TextBox("Press &lt;M-r&gt; to spawn", foreground="#d75f5f"),
-                # NB Systray is incompatible with Wayland, consider using StatusNotifier instead
-                # widget.StatusNotifier(),
-                widget.Systray(),
-                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
+                widget.Prompt(
+                    padding=10,  # Increase if you want more space around the prompt text
+                ),
+                widget.WindowName(
+                    padding=10,  # Increase to give more space around the window name
+                ),
+                widget.Systray(
+                    padding=10,  # Increase to space out systray icons
+                ),
+                widget.Clock(
+                    format="%Y-%m-%d %a %I:%M %p",
+                    padding=10,  # Increase to space out the clock from its neighbors
+                ),
+                # Add more widgets here with similar padding/margin adjustments as needed
             ],
-            24,
-            # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
-            # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
+            30,  # Increased bar size to accommodate larger padding and spacing
+            # You can also add margin here if needed, for example:
+            # margin=[10, 10, 10, 10]  # Margins for top, right, bottom, left
         ),
     ),
 ]
 
+# Your other configurations remain the same...
 # Drag floating layouts.
 mouse = [
     Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
@@ -192,3 +193,50 @@ wl_input_rules = None
 # java that happens to be on java's whitelist.
 wmname = "LG3D"
 
+# Start Network Manager Applet
+subprocess.Popen(["nm-applet"])
+
+@hook.subscribe.startup_once
+def autostart():
+    import subprocess
+    import time
+
+    # Start Alacritty
+    subprocess.Popen(["alacritty", "-e", "zsh"])
+
+    # A delay to ensure Alacritty starts up before Brave, adjust the delay as needed
+    time.sleep(2)  # 2-second delay
+
+    # Start Brave
+    subprocess.Popen(["brave"])
+
+    # Start Notion
+    subprocess.Popen(["notion-app"])
+    time.sleep(1)  # Give Notion a moment to organize its thoughts
+
+    # Start Obsidian
+    subprocess.Popen(["/usr/bin/obsidian"])
+    # Obsidian now takes a moment to unlock the vault
+
+
+@hook.subscribe.client_new
+def move_window_to_workspace(client):
+    wm_class = client.window.get_wm_class()
+    if wm_class:
+        wm_class = wm_class[0].lower()  # Use the first part of WM_CLASS for matching
+    else:
+        return  # Exit if there's no WM_CLASS
+
+    # Mapping of WM_CLASS names to workspace names/numbers, now with Notion and Obsidian
+    window_to_workspace = {
+        "brave-browser": "2",  # Brave heads to workspace 2
+        "alacritty": "1",      # Alacritty prefers the solitude of workspace 1
+        "obsidian": "3",       # Obsidian, the keeper of knowledge, claims workspace 3
+        "notion": "4"          # Notion, ever the planner, moves to workspace 4
+    }
+
+    target_workspace = window_to_workspace.get(wm_class)
+
+    if target_workspace:
+        # Move the client to the target group without switching to it
+        client.togroup(target_workspace, switch_group=False)
