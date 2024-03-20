@@ -15,6 +15,8 @@ export P10K_PINK='#f5c2e7'
 export ANDROID_HOME="$HOME/Android/Sdk"
 export JAVA_HOME="/opt/openlogic-openjdk-8u382-b05-linux-x64"
 export ZSH="$HOME/.oh-my-zsh"
+export XDG_DATA_DIRS="/usr/local/share:/usr/share:/home/mrmagee/.local/share"
+
 
 # Update PATH variable
 # Includes user's bin directory, local bin, Ruby, Glow, Android SDK tools, Java, and Deno
@@ -25,17 +27,10 @@ export PATH="$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools" # Android S
 export PATH="$JAVA_HOME/bin:$PATH"                        # Java
 export PATH="$PATH:$HOME/.deno/bin"                       # Deno
 
-
-
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
+ENABLE_CORRECTION="true"
 
-
-# Uncomment the following line to enable command auto-correction.
- ENABLE_CORRECTION="true"
-
-
-# Add wisely, as too many plugins slow down shell startup.
 plugins=(git vi-mode zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
@@ -49,15 +44,10 @@ VI_MODE_CURSOR_VISUAL=6
 VI_MODE_CURSOR_INSERT=6
 VI_MODE_CURSOR_OPPEND=0
 
-
-
-
-
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('/home/mrmagee/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
@@ -71,10 +61,8 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(zoxide init zsh)"
-
 
 # Start ssh-agent and add keys without producing output during shell initialization
 SSH_AGENT_FILE="$HOME/.ssh-agent-thing"
