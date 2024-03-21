@@ -218,6 +218,10 @@ def autostart():
     subprocess.Popen(["/usr/bin/obsidian"])
     # Obsidian now takes a moment to unlock the vault
 
+    subprocess.Popen(["firefox"])
+
+    subprocess.Popen(["telegram-desktop"])
+
 
 @hook.subscribe.client_new
 def move_window_to_workspace(client):
@@ -229,14 +233,16 @@ def move_window_to_workspace(client):
 
     # Mapping of WM_CLASS names to workspace names/numbers, now with Notion and Obsidian
     window_to_workspace = {
-        "brave-browser": "2",  # Brave heads to workspace 2
-        "alacritty": "1",      # Alacritty prefers the solitude of workspace 1
-        "obsidian": "3",       # Obsidian, the keeper of knowledge, claims workspace 3
-        "notion": "4"          # Notion, ever the planner, moves to workspace 4
+        "telegram-desktop": "6", # Move Telegram to workspace 6
+        "firefox": "5", # Moce firefox to workspace 5 
+        "brave-browser": "4",  # Brave heads to workspace 2
+        "alacritty": "3",      # Alacritty prefers the solitude of workspace 1
+        "obsidian": "2",       # Obsidian, the keeper of knowledge, claims workspace 3
+        "notion": "1"          # Notion, ever the planner, moves to workspace 4
     }
 
     target_workspace = window_to_workspace.get(wm_class)
 
     if target_workspace:
         # Move the client to the target group without switching to it
-        client.togroup(target_workspace, switch_group=False)
+       client.togroup(target_workspace, switch_group=False)
