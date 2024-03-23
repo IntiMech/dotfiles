@@ -236,8 +236,8 @@ return {
     opts = {
       workspaces = {
         {
-          name = "ZacsValut",
-          path = "~/Obsidian/ZacsVault",
+          name = "Knowledge Vault",
+          path = "~/Obsidian/Knowledge Vault 🔐",
         },
       },
       completion = {

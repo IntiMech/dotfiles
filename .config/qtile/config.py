@@ -139,6 +139,12 @@ screens = [
                 widget.Systray(
                     padding=10,  # Increase to space out systray icons
                 ),
+                widget.Battery(
+                    format='{char} {percent:2.0%}',
+                    charge_char='+',
+                    discharge_char='-',
+                    empty_char='='
+                ),
                 widget.Clock(
                     format="%Y-%m-%d %a %I:%M %p",
                     padding=10,  # Increase to space out the clock from its neighbors
@@ -218,8 +224,6 @@ def autostart():
     subprocess.Popen(["/usr/bin/obsidian"])
     # Obsidian now takes a moment to unlock the vault
 
-    subprocess.Popen(["firefox"])
-
     subprocess.Popen(["telegram-desktop"])
 
 
@@ -233,8 +237,7 @@ def move_window_to_workspace(client):
 
     # Mapping of WM_CLASS names to workspace names/numbers, now with Notion and Obsidian
     window_to_workspace = {
-        "telegram-desktop": "6", # Move Telegram to workspace 6
-        "firefox": "5", # Moce firefox to workspace 5 
+        "telegram-desktop": "5", # Move Telegram to workspace 6
         "brave-browser": "4",  # Brave heads to workspace 2
         "alacritty": "3",      # Alacritty prefers the solitude of workspace 1
         "obsidian": "2",       # Obsidian, the keeper of knowledge, claims workspace 3
