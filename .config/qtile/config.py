@@ -1,35 +1,31 @@
 from libqtile import bar, layout, qtile, widget, hook
+import os
+import time
 import subprocess
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
 from libqtile.utils import guess_terminal
+from libqtile.widget.pulse_volume import PulseVolume
 
 mod = "mod4"
 terminal = guess_terminal()    
 
 keys = [
-    # A list of available commands that can be bound to keys can be found
-    # at https://docs.qtile.org/en/latest/manual/config/lazy.html
-    # Switch between windows
     Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
     Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
     Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
     Key([mod], "space", lazy.spawn("rofi -show drun"), desc="Launch Rofi"),
-    # Key([mod], "space", lazy.layout.next(), desc=jMove window focus to other window"),
-    # Move windows between left/right columns or move up/down in current stack.
-    # Moving out of range in Columns layout will create new column.
     Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"),
     Key([mod, "shift"], "l", lazy.layout.shuffle_right(), desc="Move window to the right"),
     Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
     Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
-    # Grow windows. If current window is on the edge of screen and direction
-    # will be to screen edge - window would shrink.
     Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
     Key([mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"),
     Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
     Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
     Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
+    Key([mod], "p", lazy.spawn("flameshot gui"), desc="Take a screenshot"),
 
     Key(
         [mod, "shift"],
@@ -37,8 +33,6 @@ keys = [
         lazy.layout.toggle_split(),
         desc="Toggle between split and unsplit sides of stack",
     ),
-    # Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
-    # Toggle between different layouts as defined below
     Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
     Key([mod], "q", lazy.window.kill(), desc="Kill focused window"),
     Key(
@@ -53,9 +47,6 @@ keys = [
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
 ]
 
-# Add key bindings to switch VTs in Wayland.
-# We can't check qtile.core.name in default config as it is loaded before qtile is started
-# We therefore defer the check until the key binding is run by using .when(func=...)
 for vt in range(1, 8):
     keys.append(
         Key(
@@ -66,50 +57,32 @@ for vt in range(1, 8):
         )
     )
 
+
 groups = [Group(i) for i in "123456789"]
 
 for i in groups:
     keys.extend(
         [
-            # mod1 + group number = switch to group
             Key(
                 [mod],
                 i.name,
                 lazy.group[i.name].toscreen(),
-                desc="Switch to group {}".format(i.name),
+                desc=f"Switch to group {i.name}",
             ),
-            # mod1 + shift + group number = switch to & move focused window to group
             Key(
                 [mod, "shift"],
                 i.name,
                 lazy.window.togroup(i.name, switch_group=True),
                 desc="Switch to & move focused window to group {}".format(i.name),
             ),
-            # Or, use below if you prefer not to switch to that group.
-            # # mod1 + shift + group number = move focused window to group
-            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
-            #     desc="move focused window to group {}".format(i.name)),
         ]
     )
 
 layouts = [
     layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
     layout.Max(),
-    # Try more layouts by unleashing below layouts.
-    # layout.Stack(num_stacks=2),
-    # layout.Bsp(),
-    # layout.Matrix(),
-    # layout.MonadTall(),
-    # layout.MonadWide(),
-    # layout.RatioTile(),
-    # layout.Tile(),
-    # layout.TreeTab(),
-    # layout.VerticalTile(),
-    # layout.Zoomy(),
 ]
 
-
-# First, adjust the widget_defaults to increase padding, making everything more spaced out.
 widget_defaults = dict(
     font="sans",
     fontsize=12,
@@ -117,43 +90,38 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
-# Then, adjust the bar settings to increase its size and possibly add margin,
-# ensuring widgets have more room and don't overlap.
 screens = [
     Screen(
-        bottom=bar.Bar(
+        top=bar.Bar(
             [
-                widget.GroupBox(
-                    padding_x=5,  # Additional padding around the text
-                    padding_y=5,  # Additional padding around the text
-                    margin_x=5,  # Space between each group box
-                    margin_y=5,  # Space above and below each group box
-                    borderwidth=3,  # Thickness of the border around each group box
+                widget.GroupBox(),
+                widget.Prompt(),
+                widget.WindowName(),
+                widget.Systray(),
+                widget.PulseVolume(),
+                widget.Bluetooth(
+                    default_show_battery=True,
+                    device_battery_format=" ({battery}%)",
+                    device_format="{battery_level} [{symbol}]",
+                    symbols={
+                        "BT Adv360 Pro": "🎧",  # Headphone emoji
+                        "MDR-1000X": "🎧",      # Another headphone emoji
+                    },
                 ),
-                widget.Prompt(
-                    padding=10,  # Increase if you want more space around the prompt text
+                widget.Wallpaper(
+                    directory='~/Pictures/Wallpapers/',
+                    random_selection=True,
+                    label='',
+                    wallpaper_command=None,
+                    option='fill',
+                    mouse_callbacks={'Button1': lazy.widget["wallpaper"].eval('self.set_wallpaper()')}
                 ),
-                widget.WindowName(
-                    padding=10,  # Increase to give more space around the window name
-                ),
-                widget.Systray(
-                    padding=10,  # Increase to space out systray icons
-                ),
-                widget.Clock(
-                    format="%Y-%m-%d %a %I:%M %p",
-                    padding=10,  # Increase to space out the clock from its neighbors
-                ),
-                # Add more widgets here with similar padding/margin adjustments as needed
             ],
-            30,  # Increased bar size to accommodate larger padding and spacing
-            # You can also add margin here if needed, for example:
-            # margin=[10, 10, 10, 10]  # Margins for top, right, bottom, left
+            24,
         ),
     ),
 ]
 
-# Your other configurations remain the same...
-# Drag floating layouts.
 mouse = [
     Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
     Drag([mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()),
@@ -168,7 +136,6 @@ floats_kept_above = True
 cursor_warp = False
 floating_layout = layout.Floating(
     float_rules=[
-        # Run the utility of `xprop` to see the wm class and name of an X client.
         *layout.Floating.default_float_rules,
         Match(wm_class="confirmreset"),  # gitk
         Match(wm_class="makebranch"),  # gitk
@@ -182,42 +149,63 @@ auto_fullscreen = True
 focus_on_window_activation = "smart"
 reconfigure_screens = True
 
-# If things like steam games want to auto-minimize themselves when losing
-# focus, should we respect this or not?
 auto_minimize = True
 
 # When using the Wayland backend, this can be used to configure input devices.
 wl_input_rules = None
 
-# We choose LG3D to maximize irony: it is a 3D non-reparenting WM written in
-# java that happens to be on java's whitelist.
 wmname = "LG3D"
-
-# Start Network Manager Applet
-subprocess.Popen(["nm-applet"])
 
 @hook.subscribe.startup_once
 def autostart():
-    import subprocess
-    import time
+    home = os.path.expanduser('~')  # Resolve the home directory path
+    log_path = os.path.join(home, 'startup.log')  # Specify a log file path in your home directory
 
-    # Start Alacritty
-    subprocess.Popen(["alacritty", "-e", "zsh"])
+    def launch_app(command, delay=0, cwd=None):
+        """Launch an application with an optional delay and in a specific working directory."""
+        if delay:
+            time.sleep(delay)  # Introduce a delay if specified
+        with open(log_path, 'a') as log_file:
+            log_file.write(f"Executing command: {' '.join(command)} at {time.ctime()} in {cwd or 'default directory'}\n")
+            try:
+                subprocess.Popen(command, cwd=cwd, stdout=log_file, stderr=subprocess.STDOUT)  # Redirect stdout and stderr to log file
+            except Exception as e:
+                log_file.write(f"Error starting {command}: {e}\n")  # Log any errors in launching
 
-    # A delay to ensure Alacritty starts up before Brave, adjust the delay as needed
-    time.sleep(2)  # 2-second delay
+    # Set up the D-Bus environment
+    if 'DBUS_SESSION_BUS_ADDRESS' not in os.environ:
+        subprocess.Popen(['dbus-launch', '--sh-syntax', '--exit-with-session'], stdout=subprocess.PIPE)
+        dbus_output = subprocess.check_output(['dbus-launch', '--sh-syntax', '--exit-with-session'])
+        for line in dbus_output.decode().split(';'):
+            if line.strip().startswith('export'):
+                key, val = line.replace('export ', '').split('=')
+                os.environ[key] = val.strip()
 
-    # Start Brave
-    subprocess.Popen(["brave"])
 
-    # Start Notion
-    subprocess.Popen(["notion-app"])
-    time.sleep(1)  # Give Notion a moment to organize its thoughts
+    # Start core applications with optional delays
+    launch_app(['picom'])
+    launch_app(['blueman-applet'])  # Bluetooth management
+    launch_app(['nm-applet'])  # Network manager applet
+    launch_app(["alacritty", "-e", "zsh"])  # Terminal
+    launch_app(["brave"], delay=2)  # Browser
+    launch_app(["notion-app"], delay=1)  # Notion
+    launch_app(["/usr/bin/obsidian"])  # Obsidian
 
-    # Start Obsidian
-    subprocess.Popen(["/usr/bin/obsidian"])
-    # Obsidian now takes a moment to unlock the vault
+    # Start Docker services for N8N and others
+    launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'N8N'))
+    launch_app(['ngrok', 'start', '--all', '--config', os.path.join(home, 'N8N', 'ngrok.yml')])
 
+    # More Docker containers for other projects
+    launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'Projects', 'gpt-researcher'))
+    launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'Applications', 'Ollama'))
+
+    # Launch the AppImage via the symbolic link
+    launch_app([os.path.join(home, 'Applications', 'Beeper', 'beeper.AppImage')])
+
+    # Start JupyterLab
+    jupyter_notebook_dir = os.path.join(home, 'Projects', 'NoteBooks')
+    jupyter_command = [os.path.join(home, 'anaconda3', 'bin', 'jupyter'), "lab", "--no-browser", "--ip=0.0.0.0", "--port=8889"]
+    launch_app(jupyter_command, cwd=jupyter_notebook_dir, delay=5)  # Delay to ensure environment is ready
 
 @hook.subscribe.client_new
 def move_window_to_workspace(client):
@@ -227,12 +215,13 @@ def move_window_to_workspace(client):
     else:
         return  # Exit if there's no WM_CLASS
 
-    # Mapping of WM_CLASS names to workspace names/numbers, now with Notion and Obsidian
     window_to_workspace = {
-        "brave-browser": "2",  # Brave heads to workspace 2
         "alacritty": "1",      # Alacritty prefers the solitude of workspace 1
+        "brave-browser": "2",  # Brave heads to workspace 2
         "obsidian": "3",       # Obsidian, the keeper of knowledge, claims workspace 3
-        "notion": "4"          # Notion, ever the planner, moves to workspace 4
+        "notion": "4",          # Notion, ever the planner, moves to workspace 4
+        "beeper": "5"             # Beeper goes to workspace 5
+        
     }
 
     target_workspace = window_to_workspace.get(wm_class)

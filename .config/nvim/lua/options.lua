@@ -1,18 +1,28 @@
-vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
+vim.opt.number = true
+vim.opt.relativenumber = true
 
-vim.o.clipboard = 'unnamedplus'
+vim.opt.splitbelow = true
+vim.opt.splitright = true
 
-vim.o.number = true
-vim.o.relativenumber= true
+vim.opt.wrap = false
 
-vim.o.signcolumn = 'yes'
+vim.opt.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
 
-vim.o.tabstop = 4
-vim.o.shiftwidth = 4
+vim.opt.clipboard = "unnamedplus"
 
-vim.o.updatetime = 300
+vim.opt.scrolloff = 999
 
-vim.o.termguicolors = true
+vim.opt.virtualedit = "block"
 
-vim.o.mouse = 'a'
+vim.opt.inccommand = "split"
+
+vim.opt.ignorecase = true
+
+vim.opt.termguicolors = true
+
+vim.g.mapleader = " "
+
+vim.opt.hlsearch = false
+
