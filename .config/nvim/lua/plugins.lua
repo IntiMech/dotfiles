@@ -31,14 +31,14 @@ require('lazy').setup({
                         node_decremental = "<Leader>sd",
                     },
                 },
-                textobjexts = {
+                textobjects = {
                     select = {
                         enable = true,
                         lookahead = true,
                         keymaps = {
-                            ["af"] = "@functoin.outter",
+                            ["af"] = "@function.outer",
                             ["if"] = "@function.inner",
-                            ["ac"] = "@class.outter",
+                            ["ac"] = "@class.outer",
                             ["ic"] = { query = "class.inner", desc = "Select inner part of a class region" },
 
                         },
@@ -137,5 +137,59 @@ require('lazy').setup({
     {
         "christoomey/vim-tmux-navigator",
     },
+    {
+        "NeogitOrg/neogit",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            "sindrets/diffview.nvim",
+            "nvim-telescope/telescope.nvim",
+        },
+        config = true
+    },
+    {
+        "folke/trouble.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+    },
+    {
+      "nvim-neotest/neotest",
+      dependencies = {
+        "nvim-neotest/nvim-nio",
+        "nvim-lua/plenary.nvim",
+        "antoinemadec/FixCursorHold.nvim",
+        "nvim-treesitter/nvim-treesitter",
+        "nvim-neotest/neotest-python",
+        "nvim-neotest/neotest-plenary"
+      },
+      config = function ()
+        require("plugins.neotest")
+      end,
+    },
+    {
+        "mfussenegger/nvim-dap",
+        dependencies = {
+            "rcarriga/nvim-dap-ui",
+            "theHamsta/nvim-dap-virtual-text",
+        },
+        config = function ()
+            require("plugins.dap")
+        end
+    },
+    {
+        "tpope/vim-dadbod",
+        dependencies = {
+            "kristijanhusak/vim-dadbod-ui",
+            "kristijanhusak/vim-dadbod-completion"
+        },
+        config = function ()
+           require ("plugins.dadbod")
+        end
+    },
+    {
+        "preservim/tagbar",
+        config = function()
+            -- Set keybinding for Tagbar
+            vim.keymap.set('n', '<leader>t', ':TagbarToggle<CR>', {silent = true, noremap = true})
+        end,
+    }
 
 })

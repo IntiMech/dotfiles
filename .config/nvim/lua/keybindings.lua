@@ -50,7 +50,9 @@ local builtin = require('telescope.builtin')
 
 -- Telescope Keybindings
 vim.keymap.set('n', '<leader>ff', ":Telescope find_files<CR>", { silent = true })
+vim.keymap.set('n', '<leader>fg', builtin.live_grep, { desc = "Search for a string in the workspace using Ripgrep" })
 vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Find Help Tags" })
+vim.keymap.set('n', '<leader>ft', '<cmd>Telescope tags<CR>', {noremap = true, silent = true})
 vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols, { desc = "Find Symbols" })
 vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Find Word under Cursor" })
 vim.keymap.set("n", "<leader>fk", builtin.keymaps, { desc = "Find Keymaps" })

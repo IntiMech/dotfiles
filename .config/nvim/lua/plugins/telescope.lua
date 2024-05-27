@@ -1,3 +1,4 @@
+
 return {
   "nvim-telescope/telescope.nvim",
   tag = "0.1.4",
@@ -11,7 +12,6 @@ return {
     require("plugins.keybindings")
 
     local telescope = require("telescope")
-
     local actions = require("telescope.actions")
 
     local select_one_or_multi = function(prompt_bufnr)
@@ -31,7 +31,6 @@ return {
 
     telescope.setup({
       defaults = {
-        -- `hidden = true` is not supported in text grep commands.
         path_display = { "truncate" },
         mappings = {
           n = {
@@ -50,14 +49,19 @@ return {
       },
       pickers = {
         find_files = {
-          -- `hidden = true` will still show the inside of `.git/` as it's not `.gitignore`d.
           find_command = { "rg", "--files", "--hidden", "--glob", "!**/.git/*" },
+        },
+        live_grep = {
+          -- Additional Ripgrep arguments for live_grep
+          additional_args = function()
+            return {"--hidden", "--glob", "!**/.git/*"}
+          end
         },
       },
       extensions = {
         undo = {
           use_delta = true,
-          use_custom_command = nil, -- setting this implies `use_delta = false`. Accepted format is: { "bash", "-c", "echo '$DIFF' | delta" }
+          use_custom_command = nil, -- setting this implies `use_delta = false`
           side_by_side = false,
           diff_context_lines = vim.o.scrolloff,
           entry_format = "state #$ID, $STAT, $TIME",
