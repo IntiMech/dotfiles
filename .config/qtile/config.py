@@ -39,11 +39,15 @@ def go_to_group(name: str):
 
 def go_to_group_and_move_window(name: str):
     def _inner(qtile):
-        target_screen = 0 if name in '123456789' else 1  # Adjust the ranges based on your workspace configuration
-        if len(qtile.screens) > 1:
-            qtile.focus_screen(target_screen)
+        # Determine the target screen based on the workspace number
+        target_screen = 0 if name in '1234' else 1  # Workspaces 1-4 on screen 0 (DP), 5-9 on screen 1 (HDMI)
+        
+        # No focus change on screen, just move the window to the desired group
         qtile.current_window.togroup(name)
-        qtile.groups_map[name].toscreen()
+
+        # Optionally: Move the group to the current screen if desired, but without focusing
+        # qtile.groups_map[name].toscreen(toggle=False) # Uncomment this if you want the group also visible
+
     return _inner
 
 # Keybindings
@@ -72,11 +76,11 @@ keys = [
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
 ]
 
-# Add custom key bindings for switching and moving windows to groups
+
+# Update key bindings for moving windows without focusing
 for group in groups:
     keys.extend([
-        Key([mod], group.name, lazy.function(go_to_group(group.name)), desc=f"Switch to group {group.name}"),
-        Key([mod, "shift"], group.name, lazy.function(go_to_group_and_move_window(group.name)), desc=f"Move window to group {group.name} and switch to it"),
+        Key([mod, "shift"], group.name, lazy.function(go_to_group_and_move_window(group.name)), desc=f"Move window to group {group.name} without focusing"),
     ])
 
 # Define screens with specific group visibility
