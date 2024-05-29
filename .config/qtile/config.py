@@ -10,6 +10,43 @@ from libqtile.widget.pulse_volume import PulseVolume
 mod = "mod4"
 terminal = guess_terminal()    
 
+# Define groups with screen affinity for dual screen setup
+groups = [
+    Group("1", screen_affinity=0),
+    Group("2", screen_affinity=0),
+    Group("3", screen_affinity=0),
+    Group("4", screen_affinity=0),
+
+    Group("5", screen_affinity=1),
+    Group("6", screen_affinity=1),
+    Group("7", screen_affinity=1),
+    Group("8", screen_affinity=1),
+    Group("9", screen_affinity=1),
+
+
+]
+
+
+def go_to_group(name: str):
+    def _inner(qtile):
+        target_screen = 0 if name in '123456789' else 1  # Assuming workspace 1-4 on screen 0, and 5-8 on screen 1
+        if len(qtile.screens) > 1:
+            qtile.focus_screen(target_screen)
+        if qtile.current_screen.index == target_screen:
+            qtile.groups_map[name].toscreen()
+    return _inner
+
+
+def go_to_group_and_move_window(name: str):
+    def _inner(qtile):
+        target_screen = 0 if name in '123456789' else 1  # Adjust the ranges based on your workspace configuration
+        if len(qtile.screens) > 1:
+            qtile.focus_screen(target_screen)
+        qtile.current_window.togroup(name)
+        qtile.groups_map[name].toscreen()
+    return _inner
+
+# Keybindings
 keys = [
     Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
     Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
@@ -26,88 +63,28 @@ keys = [
     Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
     Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
     Key([mod], "p", lazy.spawn("flameshot gui"), desc="Take a screenshot"),
-
-    Key(
-        [mod, "shift"],
-        "Return",
-        lazy.layout.toggle_split(),
-        desc="Toggle between split and unsplit sides of stack",
-    ),
     Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
     Key([mod], "q", lazy.window.kill(), desc="Kill focused window"),
-    Key(
-        [mod],
-        "f",
-        lazy.window.toggle_fullscreen(),
-        desc="Toggle fullscreen on the focused window",
-    ),
+    Key([mod], "f", lazy.window.toggle_fullscreen(), desc="Toggle fullscreen on the focused window"),
     Key([mod], "t", lazy.window.toggle_floating(), desc="Toggle floating on the focused window"),
     Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
 ]
 
-for vt in range(1, 8):
-    keys.append(
-        Key(
-            ["control", "mod1"],
-            f"f{vt}",
-            lazy.core.change_vt(vt).when(func=lambda: qtile.core.name == "wayland"),
-            desc=f"Switch to VT{vt}",
-        )
-    )
+# Add custom key bindings for switching and moving windows to groups
+for group in groups:
+    keys.extend([
+        Key([mod], group.name, lazy.function(go_to_group(group.name)), desc=f"Switch to group {group.name}"),
+        Key([mod, "shift"], group.name, lazy.function(go_to_group_and_move_window(group.name)), desc=f"Move window to group {group.name} and switch to it"),
+    ])
 
-
-groups = [Group(i) for i in "123456789"]
-
-for i in groups:
-    keys.extend(
-        [
-            Key(
-                [mod],
-                i.name,
-                lazy.group[i.name].toscreen(),
-                desc=f"Switch to group {i.name}",
-            ),
-            Key(
-                [mod, "shift"],
-                i.name,
-                lazy.window.togroup(i.name, switch_group=True),
-                desc="Switch to & move focused window to group {}".format(i.name),
-            ),
-        ]
-    )
-
-layouts = [
-    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
-    layout.Max(),
-]
-
-widget_defaults = dict(
-    font="sans",
-    fontsize=12,
-    padding=10,  # Increased padding for dramatic spacing
-)
-extension_defaults = widget_defaults.copy()
-
+# Define screens with specific group visibility
 screens = [
     Screen(
         top=bar.Bar(
             [
-                widget.GroupBox(),
-                widget.Prompt(),
-                widget.WindowName(),
-                widget.Systray(),
-                widget.PulseVolume(),
-                widget.Bluetooth(
-                    default_show_battery=True,
-                    device_battery_format=" ({battery}%)",
-                    device_format="{battery_level} [{symbol}]",
-                    symbols={
-                        "BT Adv360 Pro": "🎧",  # Headphone emoji
-                        "MDR-1000X": "🎧",      # Another headphone emoji
-                    },
-                ),
+                widget.GroupBox(visible_groups=["1", "2", "3", "4"]),
                 widget.Wallpaper(
                     directory='~/Pictures/Wallpapers/',
                     random_selection=True,
@@ -120,7 +97,47 @@ screens = [
             24,
         ),
     ),
+    Screen(
+        top=bar.Bar(
+            [
+                widget.GroupBox(visible_groups=["5", "6", "7", "8", "9"]),
+                # widget.Prompt(),
+                widget.Systray(),
+                widget.PulseVolume(),
+                widget.Bluetooth(
+                    default_show_battery=True,
+                    device_battery_format=" ({battery}%)",
+                    device_format="{battery_level} [{symbol}]",
+                    symbols={
+                        "BT Adv360 Pro": "🎧",  # Headphone emoji
+                        "MDR-1000X": "🎧",
+                        },
+                    ),
+                widget.Wallpaper(
+                    directory='~/Pictures/Wallpapers/',
+                    random_selection=True,
+                    label='',
+                    wallpaper_command=None,
+                    option='fill',
+                    mouse_callbacks={'Button1': lazy.widget["wallpaper"].eval('self.set_wallpaper()')}
+                ),
+            ],
+            18,
+        ),
+    ),
 ]
+floating_layout = layout.Floating(
+    float_rules=[
+        *layout.Floating.default_float_rules,
+        Match(wm_class='VirtualBox Machine'),  # Add this line
+    ]
+)
+layouts = [
+    layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
+    layout.Max(),
+    floating_layout
+]
+
 
 mouse = [
     Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
@@ -201,31 +218,34 @@ def autostart():
 
     # Launch the AppImage via the symbolic link
     launch_app([os.path.join(home, 'Applications', 'Beeper', 'beeper.AppImage')])
+    launch_app(['zoom'])
 
-    # Start JupyterLab
-    jupyter_notebook_dir = os.path.join(home, 'Projects', 'NoteBooks')
-    jupyter_command = [os.path.join(home, 'anaconda3', 'bin', 'jupyter'), "lab", "--no-browser", "--ip=0.0.0.0", "--port=8889"]
-    launch_app(jupyter_command, cwd=jupyter_notebook_dir, delay=5)  # Delay to ensure environment is ready
+
+    subprocess.run([
+        "xrandr", "--output", "HDMI-0", "--mode", "1920x1080", "--pos", "0x0", "--rotate", "normal",
+        "--output", "DP-0", "--primary", "--mode", "2560x1440", "--pos", "1920x0", "--rotate", "normal"
+    ])
 
 @hook.subscribe.client_new
 def move_window_to_workspace(client):
-    wm_class = client.window.get_wm_class()
-    if wm_class:
-        wm_class = wm_class[0].lower()  # Use the first part of WM_CLASS for matching
-    else:
-        return  # Exit if there's no WM_CLASS
+    wm_class = client.window.get_wm_class()[0].lower() if client.window.get_wm_class() else ""
 
-    window_to_workspace = {
-        "alacritty": "1",      # Alacritty prefers the solitude of workspace 1
-        "brave-browser": "2",  # Brave heads to workspace 2
-        "obsidian": "3",       # Obsidian, the keeper of knowledge, claims workspace 3
-        "notion": "4",          # Notion, ever the planner, moves to workspace 4
-        "beeper": "5"             # Beeper goes to workspace 5
-        
+    # Mapping applications to specific workspaces
+    app_workspace_map = {
+        "alacritty": "1",
+        "beeper": "2",
+        "brave-browser": "5",
+        "obsidian": "6",
+        "notion": "7",
+        "zoom": "9",
     }
 
-    target_workspace = window_to_workspace.get(wm_class)
+    # Default workspace if app not specified
+    default_workspace = "8"
+    target_workspace = app_workspace_map.get(wm_class, default_workspace)
 
-    if target_workspace:
-        # Move the client to the target group without switching to it
-        client.togroup(target_workspace, switch_group=False)
+    # Move the client to the specified workspace
+    client.togroup(target_workspace)
+    if client.screen.index != int(target_workspace) - 1:
+        client.toscreen(int(target_workspace) - 1)
+
