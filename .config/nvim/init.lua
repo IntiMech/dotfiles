@@ -3,4 +3,3 @@ require("plugins")
 require("keybindings")
 
 vim.opt.tags = './tags;'
-

@@ -21,21 +21,15 @@ groups = [
     Group("6", screen_affinity=1),
     Group("7", screen_affinity=1),
     Group("8", screen_affinity=1),
-    Group("9", screen_affinity=1),
-
-
 ]
 
-
+# Updating the go_to_group function for correct screen focusing
 def go_to_group(name: str):
     def _inner(qtile):
-        target_screen = 0 if name in '123456789' else 1  # Assuming workspace 1-4 on screen 0, and 5-8 on screen 1
-        if len(qtile.screens) > 1:
-            qtile.focus_screen(target_screen)
-        if qtile.current_screen.index == target_screen:
-            qtile.groups_map[name].toscreen()
+        target_screen = 0 if name in '1234' else 1  # Correctly focusing screens based on workspace number
+        qtile.focus_screen(target_screen)
+        qtile.groups_map[name].toscreen()
     return _inner
-
 
 def go_to_group_and_move_window(name: str):
     def _inner(qtile):
@@ -75,7 +69,11 @@ keys = [
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
 ]
-
+# Keybindings for just focusing workspaces
+for group in groups:
+    keys.append(
+        Key([mod], group.name, lazy.function(go_to_group(group.name)), desc=f"Switch to group {group.name}")
+    )
 
 # Update key bindings for moving windows without focusing
 for group in groups:
@@ -202,7 +200,6 @@ def autostart():
                 key, val = line.replace('export ', '').split('=')
                 os.environ[key] = val.strip()
 
-
     # Start core applications with optional delays
     launch_app(['picom'])
     launch_app(['blueman-applet'])  # Bluetooth management
@@ -222,8 +219,6 @@ def autostart():
 
     # Launch the AppImage via the symbolic link
     launch_app([os.path.join(home, 'Applications', 'Beeper', 'beeper.AppImage')])
-    launch_app(['zoom'])
-
 
     subprocess.run([
         "xrandr", "--output", "HDMI-0", "--mode", "1920x1080", "--pos", "0x0", "--rotate", "normal",
@@ -241,15 +236,13 @@ def move_window_to_workspace(client):
         "brave-browser": "5",
         "obsidian": "6",
         "notion": "7",
-        "zoom": "9",
     }
 
     # Default workspace if app not specified
-    default_workspace = "8"
+    default_workspace = "4"
     target_workspace = app_workspace_map.get(wm_class, default_workspace)
 
     # Move the client to the specified workspace
     client.togroup(target_workspace)
     if client.screen.index != int(target_workspace) - 1:
         client.toscreen(int(target_workspace) - 1)
-

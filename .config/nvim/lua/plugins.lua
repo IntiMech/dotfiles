@@ -158,11 +158,13 @@ require('lazy').setup({
         "antoinemadec/FixCursorHold.nvim",
         "nvim-treesitter/nvim-treesitter",
         "nvim-neotest/neotest-python",
-        "nvim-neotest/neotest-plenary"
+        "nvim-neotest/neotest-plenary",
+        "folke/trouble.nvim",
+        "folke/neodev.nvim"
       },
-      config = function ()
-        require("plugins.neotest")
-      end,
+      config = function()
+        require("plugins.neotest").setup()
+    end
     },
     {
         "mfussenegger/nvim-dap",
@@ -188,7 +190,7 @@ require('lazy').setup({
         "preservim/tagbar",
         config = function()
             -- Set keybinding for Tagbar
-            vim.keymap.set('n', '<leader>t', ':TagbarToggle<CR>', {silent = true, noremap = true})
+            vim.keymap.set('n', '<leader>tb', ':TagbarToggle<CR>', {silent = true, noremap = true})
         end,
     }
 

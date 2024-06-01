@@ -25,4 +25,3 @@ vim.opt.termguicolors = true
 vim.g.mapleader = " "
 
 vim.opt.hlsearch = false
-

@@ -137,3 +137,4 @@ export EDITOR='nvim'
 # Added by LM Studio CLI tool (lms)
 export PATH="$PATH:/home/mrmagee/.cache/lm-studio/bin"
 alias tmux="tmux -f ~/.config/tmux/tmux.conf"
+

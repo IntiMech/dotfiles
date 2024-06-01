@@ -1,93 +1,57 @@
-return {
-  "nvim-neotest/neotest",
-  opts = {
+local M = {}
+
+function M.setup()
+  -- Setup neodev for better development experience
+  require("neodev").setup({
+    library = { plugins = { "neotest" }, types = true },
+  })
+
+  require("neotest").setup({
     adapters = {
       require("neotest-python")({
         dap = { justMyCode = false },
       }),
       require("neotest-plenary"),
-      -- Remove the ignore_file_types for Python
     },
     status = { virtual_text = true },
     output = { open_on_run = true },
     quickfix = {
       open = function()
-        if require("lazyvim.util").has("trouble.nvim") then
-          require("trouble").open({ mode = "quickfix", focus = false })
+        local has_trouble, trouble = pcall(require, "trouble")
+        if has_trouble then
+          trouble.open({ mode = "quickfix", focus = false })
         else
           vim.cmd("copen")
         end
       end,
     },
-  },
-  config = function(_, opts)
-    local neotest_ns = vim.api.nvim_create_namespace("neotest")
-    vim.diagnostic.config({
-      virtual_text = {
-        format = function(diagnostic)
-          local message = diagnostic.message:gsub("\n", " "):gsub("\t", " "):gsub("%s+", " "):gsub("^%s+", "")
-          return message
-        end,
-      },
-    }, neotest_ns)
+  })
 
-    if require("lazyvim.util").has("trouble.nvim") then
-      opts.consumers = opts.consumers or {}
-      opts.consumers.trouble = function(client)
-        client.listeners.results = function(adapter_id, results, partial)
-          if partial then return end
-          local tree = assert(client:get_position(nil, { adapter = adapter_id }))
-          local failed = 0
-          for pos_id, result in pairs(results) do
-            if result.status == "failed" and tree:get_key(pos_id) then
-              failed = failed + 1
-            end
-          end
-          vim.schedule(function()
-            local trouble = require("trouble")
-            if trouble.is_open() then
-              trouble.refresh()
-              if failed == 0 then
-                trouble.close()
-              end
-            end
-          end)
-          return {}
-        end
-      end
+  -- Function to setup keybindings
+  local function setup_neotest_keybindings()
+    local neotest = require("neotest")
+    if not neotest or not neotest.run then
+      print("Neotest is not loaded properly!")
+      return
     end
 
-    local adapters = {}
-    for name, config in pairs(opts.adapters or {}) do
-      if type(name) == "number" then
-        if type(config) == "string" then
-          config = require(config)
-        end
-        adapters[#adapters + 1] = config
-      elseif config ~= false then
-        local adapter = require(name)
-        if type(config) == "table" and not vim.tbl_isempty(config) then
-          if adapter.setup then
-            adapter.setup(config)
-          else
-            adapter(config)
-          end
-        end
-        adapters[#adapters + 1] = adapter
-      end
-    end
-    opts.adapters = adapters
+    print("Setting up Neotest keybindings...")
 
-    require("neotest").setup(opts)
-  end,
-  keys = {
-    { "<leader>tt", function() require("neotest").run.run(vim.fn.expand("%")) end, desc = "Run File" },
-    { "<leader>tT", function() require("neotest").run.run(vim.loop.cwd()) end, desc = "Run All Test Files" },
-    { "<leader>tr", function() require("neotest").run.run() end, desc = "Run Nearest" },
-    { "<leader>tl", function() require("neotest").run.run_last() end, desc = "Run Last" },
-    { "<leader>ts", function() require("neotest").summary.toggle() end, desc = "Toggle Summary" },
-    { "<leader>to", function() require("neotest").output.open({ enter = true, auto_close = true }) end, desc = "Show Output" },
-    { "<leader>tO", function() require("neotest").output_panel.toggle() end, desc = "Toggle Output Panel" },
-    { "<leader>tS", function() require("neotest").run.stop() end, desc = "Stop" },
-  },
-}
+    -- Define keybindings
+    vim.keymap.set('n', '<Leader>tt', function() neotest.run.run(vim.fn.expand("%")) end, { silent = true, desc = "Run Neotest on current file" })
+    vim.keymap.set('n', '<Leader>tT', function() neotest.run.run(vim.loop.cwd()) end, { silent = true, desc = "Run all Neotest files" })
+    vim.keymap.set('n', '<Leader>tr', function() neotest.run.run() end, { silent = true, desc = "Run nearest Neotest" })
+    vim.keymap.set('n', '<Leader>tl', function() neotest.run.run_last() end, { silent = true, desc = "Run last Neotest" })
+    vim.keymap.set('n', '<Leader>ts', function() neotest.summary.toggle() end, { silent = true, desc = "Toggle Neotest summary" })
+    vim.keymap.set('n', '<Leader>to', function() neotest.output.open({ enter = true, auto_close = true }) end, { silent = true, desc = "Open Neotest output" })
+    vim.keymap.set('n', '<Leader>tO', function() neotest.output_panel.toggle() end, { silent = true, desc = "Toggle Neotest output panel" })
+    vim.keymap.set('n', '<Leader>tS', function() neotest.run.stop() end, { silent = true, desc = "Stop Neotest run" })
+
+    print("Neotest keybindings set up successfully!")
+  end
+
+  -- Delay keybinding setup to ensure Neotest is fully loaded
+  vim.defer_fn(setup_neotest_keybindings, 100)  -- Adjust delay as needed
+end
+
+return M

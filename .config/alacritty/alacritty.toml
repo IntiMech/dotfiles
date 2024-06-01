@@ -17,4 +17,4 @@ x = 10
 y = 10
 
 [font]
-size = 13.0  # Change size to see if it applies
+size = 12.0  # Change size to see if it applies
