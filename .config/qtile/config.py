@@ -109,11 +109,11 @@ screens = [
                 widget.Bluetooth(
                     default_show_battery=True,
                     device_battery_format=" ({battery}%)",
-                    device_format="{battery_level} [{symbol}]",
-                    symbols={
-                        "BT Adv360 Pro": "🎧",  # Headphone emoji
-                        "MDR-1000X": "🎧",
-                        },
+                    # device_format="{battery_level} [{symbol}]",
+                    # symbols={
+                    #     "BT Adv360 Pro": "🎧",  # Headphone emoji
+                    #     "MDR-1000X": "🎧",
+                    #     },
                     ),
                 widget.Wallpaper(
                     directory='~/Pictures/Wallpapers/',
@@ -191,38 +191,23 @@ def autostart():
             except Exception as e:
                 log_file.write(f"Error starting {command}: {e}\n")  # Log any errors in launching
 
-    # Set up the D-Bus environment
-    if 'DBUS_SESSION_BUS_ADDRESS' not in os.environ:
-        subprocess.Popen(['dbus-launch', '--sh-syntax', '--exit-with-session'], stdout=subprocess.PIPE)
-        dbus_output = subprocess.check_output(['dbus-launch', '--sh-syntax', '--exit-with-session'])
-        for line in dbus_output.decode().split(';'):
-            if line.strip().startswith('export'):
-                key, val = line.replace('export ', '').split('=')
-                os.environ[key] = val.strip()
-
-    # Start core applications with optional delays
-    launch_app(['picom'])
-    launch_app(['blueman-applet'])  # Bluetooth management
-    launch_app(['nm-applet'])  # Network manager applet
-    launch_app(["alacritty", "-e", "zsh"])  # Terminal
+    launch_app(["alacritty", "-e", "tmux", "new-session", "-A", "-s", "Main"])  # Terminal
     launch_app(["brave"], delay=2)  # Browser
     launch_app(["notion-app"], delay=1)  # Notion
     launch_app(["/usr/bin/obsidian"])  # Obsidian
 
     # Start Docker services for N8N and others
-    launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'N8N'))
     launch_app(['ngrok', 'start', '--all', '--config', os.path.join(home, 'N8N', 'ngrok.yml')])
-
-    # More Docker containers for other projects
+    launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'N8N'))
     launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'Projects', 'gpt-researcher'))
     launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'Applications', 'Ollama'))
-
-    # Launch the AppImage via the symbolic link
+    # launch_app(['docker-compose', 'up', '-d'], cwd=os.path.join(home, 'FireCrawl'))
+    launch_app(['docker-compose', '--env-file', os.path.join(home, 'Supabase', 'docker', '.env'), '-f', 'docker-compose.yml', 'up', '-d'], cwd=os.path.join(home, 'Supabase', 'docker'))
     launch_app([os.path.join(home, 'Applications', 'Beeper', 'beeper.AppImage')])
 
     subprocess.run([
-        "xrandr", "--output", "HDMI-0", "--mode", "1920x1080", "--pos", "0x0", "--rotate", "normal",
-        "--output", "DP-0", "--primary", "--mode", "2560x1440", "--pos", "1920x0", "--rotate", "normal"
+    "xrandr", "--output", "HDMI-0", "--mode", "1920x1080", "--pos", "0x0", "--rotate", "right",
+    "--output", "DP-0", "--primary", "--mode", "2560x1440", "--pos", "1080x0", "--rotate", "normal"
     ])
 
 @hook.subscribe.client_new
@@ -234,8 +219,8 @@ def move_window_to_workspace(client):
         "alacritty": "1",
         "beeper": "2",
         "brave-browser": "5",
-        "obsidian": "6",
-        "notion": "7",
+        "obsidian": "5",
+        "notion": "6",
     }
 
     # Default workspace if app not specified

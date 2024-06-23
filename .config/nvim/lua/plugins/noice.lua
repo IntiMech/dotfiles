@@ -27,7 +27,7 @@ require("noice").setup({
     popupmenu = {
         enabled = true,
         backend = "nui",  -- Backend to use for regular cmdline completions
-        kind_icons = false,  -- Set to `false` to disable icons
+        kind_icons = true,  -- Set to `false` to disable icons
     },
     lsp = {
         progress = {

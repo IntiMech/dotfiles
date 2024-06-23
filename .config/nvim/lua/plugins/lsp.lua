@@ -28,6 +28,33 @@ lspconfig.pyright.setup({
         }
     }
 })
+-- Configure JDTLS as the Java language server
+lspconfig.jdtls.setup({
+    capabilities = capabilities,
+    on_attach = function(client, bufnr)
+        print("JDTLS is now active.")
+        set_global_lsp_keymaps()
+    end,
+    root_dir = function(fname)
+        return lspconfig.util.root_pattern('.git', 'mvnw', 'gradlew')(fname) or lspconfig.util.path.dirname(fname)
+    end,
+    settings = {
+        java = {
+            signatureHelp = { enabled = true },
+            contentProvider = { preferred = 'fernflower' },
+            completion = {
+                favoriteStaticMembers = {
+                    "org.hamcrest.MatcherAssert.assertThat",
+                    "org.hamcrest.Matchers.*",
+                    "org.hamcrest.CoreMatchers.*",
+                    "org.junit.jupiter.api.Assertions.*",
+                    "java.util.Objects.requireNonNull",
+                    "java.util.Objects.requireNonNullElse",
+                },
+            },
+        },
+    }
+})
 
 -- Call the function to set global keymaps
 set_global_lsp_keymaps()

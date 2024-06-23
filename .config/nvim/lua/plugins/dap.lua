@@ -1,5 +1,6 @@
 local dap = require('dap')
 local dapui = require('dapui')
+local nvim_dap_virtual_text = require('nvim-dap-virtual-text').setup()
 
 -- Configure the Python adapter
 dap.adapters.python = {
@@ -16,7 +17,7 @@ dap.configurations.python = {
         name = 'Launch file',
         program = '${file}',  -- This will launch the current file
         pythonPath = function()
-            return 'python'  -- Adjust this path if necessary
+            return '/home/mrmagee/Projects/IGScraper/IGScraperEnv/bin/python'  -- Adjust this path if necessary
         end,
     },
 }
@@ -38,15 +39,15 @@ dapui.setup({
                 { id = "scopes", size = 0.25 },
                 "breakpoints",
                 "stacks",
-                "watches",
+                -- "watches",
             },
-            size = 40,  -- 40 columns
-            position = "left",
+            size = 60,  -- 40 columns
+            position = "right",
         },
         {
             elements = {
                 "repl",
-                "console",
+                "watches",
             },
             size = 0.25,  -- 25% of total lines
             position = "bottom",
@@ -81,22 +82,28 @@ dapui.setup({
     }
 })
 
+vim.fn.sign_define('DapBreakpoint', { text='🔴', texthl='DapBreakpoint', linehl='DapBreakpoint', numhl='DapBreakpoint' })
+
 -- DAP Keybindings
-vim.keymap.set('n', '<leader>dk', function() require('dap').continue() end)
+vim.keymap.set('n', '<leader>dt', function() require('dapui').toggle() end)
+vim.keymap.set('n', '<leader>db', function() require('dap').toggle_breakpoint() end)
+vim.keymap.set('n', '<leader>dc', function() require('dap').continue() end)
 vim.keymap.set('n', '<leader>dl', function() require('dap').run_last() end)
-vim.keymap.set('n', '<leader>b', function() require('dap').toggle_breakpoint() end)
 vim.keymap.set('n', '<leader>dr', function() require('dap').repl.open() end)
 vim.keymap.set('n', '<leader>bc', function() require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: ')) end)
-vim.keymap.set('n', '<F10>', function() require('dap').step_over() end)
-vim.keymap.set('n', '<F11>', function() require('dap').step_into() end)
-vim.keymap.set('n', '<F12>', function() require('dap').step_out() end)
 vim.keymap.set('n', '<leader>dp', function() require('dap').pause() end)
-vim.keymap.set('n', '<leader>de', function() require('dap.ui.widgets').hover() end)
+vim.keymap.set('n', '<leader>dw', function() require('dap.ui.widgets').hover() end)
+vim.keymap.set('n', '<F6>', function() require('dap').step_over() end)
+vim.keymap.set('n', '<F7>', function() require('dap').step_into() end)
+vim.keymap.set('n', '<F8>', function() require('dap').step_out() end)
 
--- DAP UI Keybindings
-vim.keymap.set('n', '<leader>du', function() require('dapui').open() end)
-vim.keymap.set('n', '<leader>dc', function() require('dapui').close() end)
-vim.keymap.set('n', '<leader>dt', function() require('dapui').toggle() end)
+vim.keymap.set('n', '<leader>?', function()
+    require('dapui').eval(nil, { enter = true })
+end)
+
+vim.keymap.set({'n', 'v'}, '<Leader>dh', function()
+      require('dap.ui.widgets').hover()
+    end)
 
 -- Automatically open and close dap-ui
 dap.listeners.after.event_initialized["dapui_config"] = function()

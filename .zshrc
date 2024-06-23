@@ -3,24 +3,32 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# Set environment variables for CUDA
-export CUDA_HOME="/opt/cuda"
-export PATH="$CUDA_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$CUDA_HOME/lib64:/usr/lib:$LD_LIBRARY_PATH"
-export PATH="$PATH:/home/mrmagee/LmStudio/squashfs-root/resources/app/.webpack"
 
-# Set environment variables
+# Personalized environment variables
 export P10K_PINK='#f5c2e7'
-export ANDROID_HOME="$HOME/Android/Sdk"
-export JAVA_HOME="/usr/lib/jvm/java-22-openjdk"
 export ZSH="$HOME/.oh-my-zsh"
+export NUMEXPR_MAX_THREADS=24
+
+
+# System environment directories
 export XDG_DATA_DIRS="/usr/local/share:/usr/share:/home/mrmagee/.local/share"
 
-# Update PATH variable
-export PATH="$HOME/bin:/usr/local/bin:$PATH"              # Standard user and local binaries
-export PATH="$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools" # Android SDK
-export PATH="$JAVA_HOME/bin:$PATH"                        # Java
-export PATH="$ANDROID_HOME/build-tools/34.0.0:$PATH"
+# Java environment settings
+export JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+export PATH="$JAVA_HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$JAVA_HOME/lib:$LD_LIBRARY_PATH:$JAVA_HOME/lib/server"
+# CUDA environment settings
+export CUDA_HOME="/opt/cuda"
+export PATH="$CUDA_HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$CUDA_HOME/lib64:$LD_LIBRARY_PATH"
+
+
+# Android SDK settings
+export ANDROID_HOME="$HOME/Android/Sdk"
+export PATH="$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/34.0.0:$PATH"
+
+# Additional tool paths
+export PATH="$HOME/bin:/usr/local/bin:/home/mrmagee/LmStudio/squashfs-root/resources/app/.webpack:$PATH"
 
 # Set the directory we want to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
@@ -87,6 +95,7 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 alias ls='ls --color'
 alias vim='nvim'
 alias c='clear'
+alias json='jq .'
 
 # Shell integrations
 eval "$(fzf --zsh)"
@@ -138,3 +147,7 @@ export EDITOR='nvim'
 export PATH="$PATH:/home/mrmagee/.cache/lm-studio/bin"
 alias tmux="tmux -f ~/.config/tmux/tmux.conf"
 
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

@@ -16,12 +16,17 @@ require('lazy').setup({
         "nvim-treesitter/nvim-treesitter",
         config = function()
             require("nvim-treesitter.configs").setup({
-                ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "python", "markdown", "bash", "csv", "dockerfile", "json" },
+                ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "python", "markdown", "markdown_inline", "bash", "csv", "dockerfile", "json" },
 
                 auto_install = true,
 
+                indent = {
+                    enable = true,
+                },
+
                 highlight = {
                     enable = true,
+                    additional_vim_regex_highlighting = false,  -- Ensure markdown highlighting
                 },
                 incremental_selection = {
                     enable = true,
@@ -47,11 +52,39 @@ require('lazy').setup({
                             ["@function.outer"] = "v",
                             ["@class.outer"] = "<c-v>",
                         },
-                        include_surrounding_whitespace = true,
+                        include_surrounding_whitespace = false,
                     },
                 },
+                refactor = {
+                highlight_definitions = {
+                  enable = true,
+                  -- Set to false if you have an `updatetime` of ~100.
+                  clear_on_cursor_move = true,
+                },
+              },
             })
-        end
+            -- Set conceallevel for Markdown files
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = "markdown",
+                callback = function()
+                    vim.opt_local.conceallevel = 2
+                end,
+        })
+        end,
+    },
+    {
+        "nvim-lua/plenary.nvim",
+    },
+    {
+        "nvim-telescope/telescope.nvim",
+        dependencies = {
+          "ThePrimeagen/harpoon",
+          "nvim-lua/plenary.nvim",
+          "joshmedeski/telescope-smart-goto.nvim",
+        },
+        config = function()
+          require("plugins.telescope")
+        end,
     },
     {
         "rebelot/kanagawa.nvim",
@@ -63,7 +96,13 @@ require('lazy').setup({
         "MunifTanjim/nui.nvim"
     },
     {
+        "nvim-treesitter/nvim-treesitter-refactor",
+    },
+    {
         "nvim-treesitter/nvim-treesitter-textobjects",
+    },
+    {
+        "nvim-treesitter/nvim-treesitter-context",
     },
     {
         "rafamadriz/friendly-snippets",
@@ -117,22 +156,19 @@ require('lazy').setup({
         end,
     },
     {
-        "nvim-lua/plenary.nvim",
-    },
-    {
         "folke/noice.nvim",
-        event = "VeryLazy",
+        -- event = "VeryLazy",
         config = function()
             require("plugins.noice")
         end,
     },
-    {
-        "nvim-telescope/telescope.nvim",
-        requires = { "nvim-lua/plenary.nvim" },
-        config = function()
-            require("plugins.telescope")
-        end,
-    },
+    -- {
+    --     "nvim-telescope/telescope.nvim",
+    --     dependencies = { "nvim-lua/plenary.nvim" },
+    --     config = function()
+    --         require("plugins.telescope")
+    --     end,
+    -- },
 
     {
         "christoomey/vim-tmux-navigator",
@@ -144,11 +180,19 @@ require('lazy').setup({
             "sindrets/diffview.nvim",
             "nvim-telescope/telescope.nvim",
         },
-        config = true
+        config = function()
+            require("plugins.neogit")
+        end,
     },
     {
-        "folke/trouble.nvim",
-        dependencies = { "nvim-tree/nvim-web-devicons" },
+        "nvim-tree/nvim-web-devicons"
+    },
+    {
+    "folke/trouble.nvim",
+    dependencies = "nvim-tree/nvim-web-devicons",
+    config = function()
+      require("plugins.trouble").setup()
+    end,
     },
     {
       "nvim-neotest/neotest",
@@ -164,7 +208,7 @@ require('lazy').setup({
       },
       config = function()
         require("plugins.neotest").setup()
-    end
+    end,
     },
     {
         "mfussenegger/nvim-dap",
@@ -174,7 +218,19 @@ require('lazy').setup({
         },
         config = function ()
             require("plugins.dap")
-        end
+        end,
+    },
+    {
+        "linux-cultist/venv-selector.nvim",
+        branch = "regexp",
+        dependencies = {
+            "nvim-telescope/telescope.nvim",
+            "neovim/nvim-lspconfig",
+            "mfussenegger/nvim-dap-python"
+         },
+         config = function()
+            require("plugins.venv-selector")
+         end,
     },
     {
         "tpope/vim-dadbod",
@@ -184,7 +240,7 @@ require('lazy').setup({
         },
         config = function ()
            require ("plugins.dadbod")
-        end
+        end,
     },
     {
         "preservim/tagbar",
@@ -192,6 +248,57 @@ require('lazy').setup({
             -- Set keybinding for Tagbar
             vim.keymap.set('n', '<leader>tb', ':TagbarToggle<CR>', {silent = true, noremap = true})
         end,
-    }
+    },
+    {
+        "Exafunction/codeium.vim",
+        config = function ()
+            vim.keymap.set("i", "<C-g>", function () return vim.fn['codeium#Accept']() end, { expr = true, silent = true })
+            vim.keymap.set("i", "<C-;>", function () return vim.fn['codeium#CycleCompletions'](1) end, { expr = true, silent = true })
+            vim.keymap.set("i", "<C-,>", function () return vim.fn['codeium#CycleCompletions'](-1) end, { expr = true, silent = true })
+            vim.keymap.set("i", "<C-x>", function () return vim.fn['codeium#Clear']() end, { expr = true, silent = true })
+
+        end,
+    },
+    {
+        "AckslD/nvim-neoclip.lua",
+        dependencies = {
+        "kkharji/sqlite.lua",
+        "nvim-telescope/telescope.nvim",
+        },
+        config = function()
+            require('plugins.neoclip')
+        end,
+    },
+    {
+        "ggandor/leap.nvim",
+        config = function()
+            local leap = require("leap")
+            leap.add_default_mappings()
+            leap.opts.case_sensitive = true
+        end,
+    },
+    {
+        "lewis6991/gitsigns.nvim",
+        config = function()
+            require("plugins.gitsigns")
+        end,
+    },
+    {
+        "xiyaowong/telescope-emoji.nvim"
+    },
+    {
+        "epwalsh/obsidian.nvim",
+        version = "*",
+        lazy = true,
+        ft = "markdown",
+        dependencies = {
+            "nvim-lua/plenary.nvim"
+        },
+        config = function()
+            require("plugins.obsidian")  -- Keep your custom config file
+        end,
+    },
+
+
 
 })

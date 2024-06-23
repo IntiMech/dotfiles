@@ -10,25 +10,19 @@ cmp.setup({
         end,
     },
     mapping = cmp.mapping.preset.insert({
-        ['<Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_next_item()
-            elseif luasnip.expand_or_jumpable() then
+        -- Remove '<Tab>' binding
+        -- Remove '<S-Tab>' binding
+
+        -- Reassign snippet expansion to '<S-Enter>'
+        ['<S-CR>'] = cmp.mapping(function(fallback)
+            if luasnip.expand_or_jumpable() then
                 luasnip.expand_or_jump()
             else
                 fallback()
             end
         end, {'i', 's'}),
-        ['<S-Tab>'] = cmp.mapping(function(fallback)
-            if cmp.visible() then
-                cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-                luasnip.jump(-1)
-            else
-                fallback()
-            end
-        end, {'i', 's'}),
-        ['<CR>'] = cmp.mapping.confirm({ select = true }),
+
+        ['<CR>'] = cmp.mapping.confirm({ select = true }),  -- Confirm the selected completion
     }),
     sources = cmp.config.sources({
         { name = 'luasnip', option = { show_autosnippets = true } },  -- Enabling autosnippets
@@ -36,4 +30,11 @@ cmp.setup({
         { name = 'buffer' },
         { name = 'path' },
     })
+})
+-- Setup vim-dadbod
+cmp.setup.filetype({ "sql" }, {
+    sources = {
+        { name = "vim-dadbod-completion" },
+        { name = "buffer" },
+    },
 })
